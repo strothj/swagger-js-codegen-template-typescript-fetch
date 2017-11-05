@@ -19,17 +19,15 @@ or
 ## Usage
 
 ```js
-const templates = [
+const template = [
   "class",
   "definition",
   "method",
   "type"
 ].reduce((acc, name) => {
   acc[name] = fs.readFileSync(
-    path.resolve(
-      __dirname,
-      `../node_modules/swagger-js-codegen-template-typescript-fetch/${name}.mustache`
-     )
+    path.resolve(__dirname, `../node_modules/swagger-js-codegen-template-typescript-fetch/${name}.mustache`),
+    "utf-8"
   );
   return acc;
 }, {});
@@ -38,7 +36,6 @@ const source = Codegen.getCustomCode({
   className: "Api",
   swagger: spec,
   template
-  /* , lint: false */
 });
 ```
 
