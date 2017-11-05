@@ -1,0 +1,158 @@
+{{! Based on the templates from, modified for this project:
+https://github.com/wcandillon/swagger-js-codegen/tree/master/templates }}
+{{&methodName}}URL(parameters: {
+{{#parameters}}{{^isSingleton}}'{{&camelCaseName}}'{{&cardinality}}: {{> type}},
+{{/isSingleton}}{{/parameters}}
+queryParameters?: any,
+apiUrl?: string
+}): string {
+    let queryParameters: any = {};
+    const apiUrl = parameters.apiUrl ? parameters.apiUrl: this.apiUrl;
+    let path = '{{&path}}'; /* tslint:disable-line */
+    {{#parameters}}
+        {{#isQueryParameter}}
+            {{#isSingleton}}
+                queryParameters['{{&name}}'] = '{{&singleton}}';
+            {{/isSingleton}}
+            {{^isSingleton}}
+                {{#isPatternType}}
+                    Object.keys(parameters).forEach((parameterName) => {
+                    if(new RegExp('{{&pattern}}').test(parameterName)){
+                    queryParameters[parameterName] = parameters[parameterName];
+                    }
+                    });
+                {{/isPatternType}}
+                {{^isPatternType}}
+                    if(parameters['{{&camelCaseName}}'] !== undefined){
+                    queryParameters['{{&name}}'] = parameters['{{&camelCaseName}}'];
+                    }
+                {{/isPatternType}}
+            {{/isSingleton}}
+        {{/isQueryParameter}}
+
+        {{#isPathParameter}}
+            path = path.replace('{{=<% %>=}}{<%&name%>}<%={{ }}=%>', `${parameters['{{&camelCaseName}}']}`);
+        {{/isPathParameter}}
+    {{/parameters}}
+
+    if(parameters.queryParameters) {
+        Object.keys(parameters.queryParameters).forEach((parameterName) => {
+            queryParameters[parameterName] = parameters.queryParameters[parameterName];
+        });
+    }
+
+    {{^isBodyParameter}}
+        {{#isPOST}}
+    queryParameters = {};
+        {{/isPOST}}
+    {{/isBodyParameter}}
+
+
+    let keys = Object.keys(queryParameters); /* tslint:disable-line */
+    return apiUrl + path + (keys.length > 0 ? '?' + (keys.map(key => key + '=' + encodeURIComponent(queryParameters[key])).join('&')): '');
+}
+
+/**
+* {{&summary}}
+* @method
+{{#externalDocs}}
+* @see {@link {{&url}}|{{#description}}{{&description}}{{/description}}{{^description}}External docs{{/description}}}
+{{/externalDocs}}
+* @name {{&className}}#{{&methodName}}
+{{#parameters}}
+    {{^isSingleton}} * @param {{=<% %>=}}{<%&type%>}<%={{ }}=%> {{&camelCaseName}} - {{&description}}{{/isSingleton}}
+{{/parameters}}
+*/
+{{&methodName}}(parameters: {
+{{#parameters}}{{^isSingleton}}'{{&camelCaseName}}'{{&cardinality}}: {{> type}},
+{{/isSingleton}}{{/parameters}}
+    queryParameters?: any,
+    apiUrl?: string
+}): Promise<Response> {
+    const apiUrl = parameters.apiUrl ? parameters.apiUrl : this.apiUrl;
+    let path = '{{&path}}'; /* tslint:disable-line */
+    let body: any;
+    let queryParameters: any = {};
+    let headers: any = {}; /* tslint:disable-line */
+    let form: any = {};
+{{#headers}}
+    headers['{{&name}}'] = {{&value}};
+{{/headers}}
+
+{{#parameters}}
+
+    {{#isQueryParameter}}
+        {{#isSingleton}}
+            queryParameters['{{&name}}'] = '{{&singleton}}';
+        {{/isSingleton}}
+        {{^isSingleton}}
+            {{#isPatternType}}
+                Object.keys(parameters).forEach((parameterName) => {
+                    if(new RegExp('{{&pattern}}').test(parameterName)){
+                        queryParameters[parameterName] = parameters[parameterName];
+                    }
+                });
+            {{/isPatternType}}
+            {{^isPatternType}}
+                if(parameters['{{&camelCaseName}}'] !== undefined) {
+                    queryParameters['{{&name}}'] = parameters['{{&camelCaseName}}'];
+                }
+            {{/isPatternType}}
+        {{/isSingleton}}
+    {{/isQueryParameter}}
+
+    {{#isPathParameter}}
+        path = path.replace('{{=<% %>=}}{<%&name%>}<%={{ }}=%>', `${parameters['{{&camelCaseName}}']}`);
+    {{/isPathParameter}}
+
+    {{#isHeaderParameter}}
+        {{#isSingleton}}
+            headers['{{&name}}'] = '{{&singleton}}';
+        {{/isSingleton}}
+        {{^isSingleton}}
+            if(parameters['{{&camelCaseName}}'] !== undefined) {
+                headers['{{&name}}'] = parameters['{{&camelCaseName}}'];
+            }
+        {{/isSingleton}}
+    {{/isHeaderParameter}}
+
+    {{#isBodyParameter}}
+        if(parameters['{{&camelCaseName}}'] !== undefined) {
+            body = parameters['{{&camelCaseName}}'];
+        }
+    {{/isBodyParameter}}
+
+    {{#isFormParameter}}
+        {{#isSingleton}}
+            form['{{&name}}'] = '{{&singleton}}';
+        {{/isSingleton}}
+        {{^isSingleton}}
+            if(parameters['{{&camelCaseName}}'] !== undefined) {
+                form['{{&name}}'] = parameters['{{&camelCaseName}}'];
+            }
+        {{/isSingleton}}
+    {{/isFormParameter}}
+
+    {{#required}}
+        if(parameters['{{&camelCaseName}}'] === undefined) {
+            throw new Error('Missing required {{&paramType}} parameter: {{&camelCaseName}}');
+        }
+    {{/required}}
+
+{{/parameters}}
+
+if(parameters.queryParameters) {
+    Object.keys(parameters.queryParameters).forEach((parameterName)=>{
+        queryParameters[parameterName] = parameters.queryParameters[parameterName];
+    });
+}
+
+    {{^isBodyParameter}}
+        {{#isPOST}}
+            form = queryParameters;
+            queryParameters = {};
+        {{/isPOST}}
+    {{/isBodyParameter}}
+
+    return this.fetch('{{method}}', apiUrl + path, body, headers, queryParameters, form);
+}

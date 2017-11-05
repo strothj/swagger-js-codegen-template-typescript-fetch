@@ -1,0 +1,12 @@
+{
+  "name": "swagger-js-codegen-template-typescript-fetch",
+  "version": "1.0.0",
+  "description": "TypeScript fetch template for swagger-js-codegen",
+  "repository": "https://github.com/strothj/swagger-js-codegen-template-typescript-fetch",
+  "author": "strothj <jason@jasons.io>",
+  "license": "Apache 2.0",
+  "private": false,
+  "files":[
+    "*.mustache"
+  ]
+}

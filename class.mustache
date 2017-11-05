@@ -1,0 +1,92 @@
+{{! Based on the templates from, modified for this project:
+https://github.com/wcandillon/swagger-js-codegen/tree/master/templates }}
+/**
+ * {{&description}}
+ * @class {{&className}}
+ */
+export default class {{&className}} {
+  private apiUrl: string = "{{&domain}}";
+  // @ts-ignore
+  private logger: Logger = () => {};
+
+  /**
+   * @param apiUrl Api url.
+   * @param logger Optional logging function.
+   */
+  constructor(apiUrl?: string, logger?: Logger) {
+    if (apiUrl) this.apiUrl = apiUrl;
+    if (logger) this.logger = logger;
+  }
+
+  getApiUrl() {
+    return this.apiUrl;
+  }
+
+  {{#methods}}
+    {{> method}}
+  {{/methods}}
+
+  private async fetch(
+    method: string,
+    url: string,
+    body: any,
+    headers: any,
+    queryParameters: any,
+    form: any
+  ) {
+    const reqMethod = method;
+    const reqHeaders = new Headers();
+    let reqBody: any;
+    let reqUrl = url;
+
+    if (typeof queryParameters === "object") {
+      const query = Object.keys(queryParameters)
+        .map(
+          k =>
+            encodeURIComponent(k) + "=" + encodeURIComponent(queryParameters[k])
+        )
+        .join("&");
+      if (query.length) reqUrl = reqUrl + "?" + query;
+    }
+
+    if (typeof headers === "object")
+      Object.keys(headers).forEach(key => {
+        reqHeaders.set(key, headers[key]);
+      });
+
+    if (typeof body === "object" && !(body.constructor.name === "Buffer")) {
+      reqHeaders.set("Content-Type", "application/json");
+      reqBody = JSON.stringify(body);
+    } else if (typeof body === "object") {
+      reqBody = body;
+    } else if (Object.keys(form).length > 0) {
+      reqBody = new FormData();
+      Object.keys(form).forEach(key => {
+        (reqBody as FormData).set(key, form[key]);
+      });
+    }
+
+    const reqOpts = {
+      method: reqMethod,
+      body: reqBody,
+      headers: reqHeaders
+    };
+
+    const res = await fetch(reqUrl, reqOpts);
+    if (res.ok) return res;
+
+    const err = new Error(res.statusText);
+    (err as any).response = res;
+    throw err;
+  }
+};
+
+//#region Definitions
+
+{{#definitions}}
+{{> definition}}
+
+{{/definitions}}
+//#endregion
+
+export type Logger = (line: string) => void;

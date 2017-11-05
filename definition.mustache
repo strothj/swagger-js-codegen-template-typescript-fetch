@@ -1,0 +1,26 @@
+{{! Based on the templates from, modified for this project:
+https://github.com/wcandillon/swagger-js-codegen/tree/master/templates }}
+{{#tsType}}{{#description}}
+/**
+ * {{&description}}
+ */
+{{/description}}{{!
+Export type or interface depending on typescript type
+
+Atomic type export
+}}{{#isAtomic}}export type{{/isAtomic}}{{!
+
+Object type export
+}}{{^isAtomic}}export interface{{/isAtomic}}{{!
+
+End export type
+}}{{/tsType}}{{!
+
+Add name
+}} {{&name}} {{!
+
+Add equal sign for atomic type
+}}{{#tsType}}{{#isAtomic}}= {{/isAtomic}}{{/tsType}}{{!
+
+Add type definition
+}}{{#tsType}}{{> type}}{{/tsType}};
