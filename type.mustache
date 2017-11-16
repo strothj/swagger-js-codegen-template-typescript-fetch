@@ -3,7 +3,8 @@ https://github.com/wcandillon/swagger-js-codegen/tree/master/templates }}
 {{#tsType}}
 {{! must use different delimiters to avoid ambiguities when delimiters directly follow a literal brace {. }}
 {{=<% %>=}}
-<%#isRef%><%target%><%/isRef%><%!
+<%#isRef%><%target%>
+<%/isRef%><%!
 %><%#isAtomic%><%&tsType%><%/isAtomic%><%!
 %><%#isObject%>{<%#properties%><%#description%>
 /**

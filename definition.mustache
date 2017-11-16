@@ -11,7 +11,15 @@ Atomic type export
 }}{{#isAtomic}}export type{{/isAtomic}}{{!
 
 Object type export
-}}{{^isAtomic}}export interface{{/isAtomic}}{{!
+}}{{^isAtomic}}{{!
+
+Export interface if an object
+}}{{#isObject}}export interface{{/isObject}}{{!
+
+Export type if not an object
+}}{{^isObject}}export type {{/isObject}}{{!
+
+}}{{/isAtomic}}{{!
 
 End export type
 }}{{/tsType}}{{!
@@ -19,8 +27,10 @@ End export type
 Add name
 }} {{&name}} {{!
 
-Add equal sign for atomic type
-}}{{#tsType}}{{#isAtomic}}= {{/isAtomic}}{{/tsType}}{{!
+}}{{#tsType}}{{!
+
+Add equal sign not an object
+}}{{^isObject}}= {{/isObject}}{{!
 
 Add type definition
-}}{{#tsType}}{{> type}}{{/tsType}};
+}}{{> type}}{{/tsType}};
